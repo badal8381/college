@@ -1,0 +1,10 @@
+Delhi 11
+Mumbai 22
+Kolkata 33
+Channai 44
+Hyderabad 40
+Bangalore 80
+Pune 20
+Ahmedabad 79
+Jaipur 141
+Dehradun 135
