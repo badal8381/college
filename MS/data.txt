@@ -1,603 +1,276 @@
-ass 1 :
 
-q1:
-#!/bin/bash
+Assignment 1: Problem Space, Search and Control Strategies
 
-SOURCE="/home/ajay/Desktop/shell code/sourc"
-DESTINATION="/home/ajay/Desktop/shell code/dest"
+1. Breadth First Search (BFS)
+-----------------------------
+from collections import deque
+
+def bfs(graph, start):
+    visited = set()
+    queue = deque([start])
+    while queue:
+        node = queue.popleft()
+        if node not in visited:
+            print(node, end=" ")
+            visited.add(node)
+            queue.extend(graph[node] - visited)
+
+graph = {
+    'A': {'B','C'},
+    'B': {'D','E'},
+    'C': {'F'},
+    'D': set(),
+    'E': {'F'},
+    'F': set()
+}
+bfs(graph, 'A')
 
 
-mkdir -p "$DESTINATION"
-cp -r "$SOURCE" "$DESTINATION" && echo "Backup completed" || echo "Backup failed"
+2. Depth First Search (DFS)
+---------------------------
+def dfs(graph, start, visited=None):
+    if visited is None:
+        visited = set()
+    print(start, end=" ")
+    visited.add(start)
+    for neighbor in graph[start]:
+        if neighbor not in visited:
+            dfs(graph, neighbor, visited)
+
+dfs(graph, 'A')
 
 
-...............................................................................
-q2:
+3. A* Algorithm
+--------------
+from queue import PriorityQueue
 
-#!/bin/bash
+def a_star(graph, start, goal, h):
+    open_set = PriorityQueue()
+    open_set.put((0, start))
+    g = {start: 0}
+    while not open_set.empty():
+        _, current = open_set.get()
+        if current == goal:
+            print(f"Reached: {goal}")
+            return
+        for neighbor, cost in graph[current].items():
+            temp_g = g[current] + cost
+            if neighbor not in g or temp_g < g[neighbor]:
+                g[neighbor] = temp_g
+                f = temp_g + h[neighbor]
+                open_set.put((f, neighbor))
 
-SERVICE="sysstat.service"
+graph = {
+    'A': {'B':1, 'C':3},
+    'B': {'D':1, 'E':5},
+    'C': {'F':2},
+    'D': {}, 'E': {'F':1}, 'F': {}
+}
+h = {'A':5, 'B':3, 'C':4, 'D':2, 'E':2, 'F':0}
+a_star(graph, 'A', 'F', h)
 
-if systemctl is-active --quiet "$SERVICE"; then
-    echo "running"
-else
-    echo "not running"
+
+4. Best First Search
+---------------------
+from queue import PriorityQueue
+
+def best_first_search(graph, start, goal, h):
+    visited = set()
+    pq = PriorityQueue()
+    pq.put((h[start], start))
+    while not pq.empty():
+        _, node = pq.get()
+        if node == goal:
+            print(f"Reached: {goal}")
+            return
+        if node not in visited:
+            print(node, end=" ")
+            visited.add(node)
+            for neighbor in graph[node]:
+                if neighbor not in visited:
+                    pq.put((h[neighbor], neighbor))
+
+graph = {
+    'A': ['B','C'],
+    'B': ['D','E'],
+    'C': ['F'],
+    'D': [], 'E': ['F'], 'F': []
+}
+h = {'A':5,'B':2,'C':4,'D':6,'E':1,'F':0}
+best_first_search(graph, 'A', 'F', h)
+
+
+5. AO* Algorithm
+----------------
+def aostar(node, graph, h):
+    print("Processing:", node)
+    if node not in graph or not graph[node]:
+        return h[node]
     
-fi
+    cost, path = float('inf'), None
+    for option in graph[node]:
+        current_cost = sum(h[child] for child in option[0]) + option[1]
+        if current_cost < cost:
+            cost = current_cost
+            path = option[0]
+    
+    for child in path:
+        h[child] = aostar(child, graph, h)
+    
+    h[node] = sum(h[child] for child in path)
+    return h[node]
 
-...............................................................................................
-q3:
-
-#!/bin/bash
-
-HOST="pika.com"
-OUTPUT_FILE="ping_results.log"
-
-
-if ping -c 1 "$HOST" &> /dev/null; then
-    echo "$(date): $HOST is reachable" >> "$OUTPUT_FILE"
-else
-    echo "$(date): $HOST is not reachable" >> "$OUTPUT_FILE"
-fi
-
-...................................................................................
-
-q4:
-
-#!/bin/bash
-
-OUTPUT_FILE="system_uptime.log"
-
-echo "$(date): $(uptime -p)" >> "$OUTPUT_FILE"
-
-...................................................................................
-
-q5:
-
-#!/bin/bash
-
-echo "$(ps aux --sort=-%mem | head -n 11)" >> "memory_usage.log"
-
-......................................................................................
-
-q6:
-
-#!/bin/bash
-
-netstat -tuln | grep LISTEN
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-ASS1
-#!/bin/bash
-
-# 1. Displaying System Information
-#!/bin/bash
-echo "Current Date and Time: $(date)"
-echo "Logged in user: $USER"
-echo "Shell: $SHELL"
-
-
-# 2. Multiplication Table Generator
-#!/bin/bash
-output_file="multiplication.txt"
-> $output_file
-for i in {1..5}; do
-  for j in {1..10}; do
-    echo "$i x $j = $((i * j))" >> $output_file
-  done
-  echo "" >> $output_file
-done
-cat $output_file
-
-
-# 3. Recursive .txt File Error Counter
-#!/bin/bash
-report="error_report.txt"
-> $report
-find . -name "*.txt" | while read file; do
-  count=$(grep -i "error" "$file" | wc -l)
-  echo "$file: $count" >> $report
-done
-
-cat $report
-
-
-# 4. Network Availability Checker (Example usage: bash script.sh google.com)
-#!/bin/bash
-read -p "Enter hostname/IP: " host
-filename="ping_result.log"
-if ping -c 1 "$host" &> /dev/null; then
-  echo "$(date): $host is reachable" >> "$filename"
-else
-  echo "$(date): $host is not reachable" >> "$filename"
-fi
-
-cat $filename
-
-
-# 5. CPU Usage Monitor
-#!/bin/bash
-iterations=10
-count=0
-while (( count < iterations )); do
-  usage=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')
-  usage=${usage%.*}
-  if (( usage < 10 )); then
-    continue
-  elif (( usage > 90 )); then
-    echo "High CPU usage: $usage%" >> cpu.log
-    break
-  else
-    echo "$(date): CPU Usage = $usage%" >> cpu.log
-  fi
-  ((count++))
-done
-
-
-# 6. Log File Processor (Example usage: bash script.sh logfile.txt)
-#!/bin/bash
-logfile="sample.log"
-grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' "$logfile"
-grep -Eo '\[.*\]' "$logfile"
-grep -i "error" "$logfile"
-
-
-# 7. Prime Number Checker
-#!/bin/bash
-is_prime() {
-  num=$1
-  if (( num <= 1 )); then echo "Not Prime"; return; fi
-  for (( i=2; i*i<=num; i++ )); do
-    if (( num % i == 0 )); then echo "Not Prime"; return; fi
-  done
-  echo "Prime"
+graph = {
+    'A': [ (['B','C'], 1) ],
+    'B': [ (['D','E'], 1) ],
+    'C': [ (['F'], 1) ],
+    'D': [], 'E': [], 'F': []
 }
-read -p "Enter a number: " n
-is_prime "$n"
-
-
-# 8. Directory Size Monitor (Example usage: bash script.sh /path/to/dir)
-#!/bin/bash
-read -p "Enter directory path: " dir
-filename="dirsize_warn.log"
-size=$(du -sm "$dir" | cut -f1)
-if (( size > 500 )); then
-  echo "$(date): Directory $dir exceeds 500MB. Size: ${size}MB" >> "$filename"
-fi
-
-
-# 9. CSV Processing with awk (Example usage: bash script.sh employees.csv)
-#!/bin/bash
-awk -F, '
-{
-  dept[$2]+=$3; count[$2]++
-  split($4, d, "-"); 
-  if (2024 - d[1] > 5) print "Old employee:", $1
-}
-END {
-  for (d in dept) {
-    print "Average salary in", d, ":", dept[d]/count[d]
-  }
-}' employees.csv
-
-
-# 10. Incremental Backups with Cron (AWS EC2)
-#!/bin/bash
-backup_dir="./backups"
-mkdir -p $backup_dir
-find . -type f -mtime -1 | tar -czf "$backup_dir/incremental-$(date +%F).tar.gz" -T -
-
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-GITHUB :
-#!/bin/bash
-
-#############################
-# 1) Git and GitHub Basics Workflow
-#############################
+h = {'A':0,'B':0,'C':0,'D':1,'E':2,'F':3}
+aostar('A', graph, h)
+
+
+Assignment 3: Game Playing
+
+1. Minimax
+----------
+def minimax(depth, node, isMax, scores):
+    if depth == 2:
+        return scores[node]
+    if isMax:
+        return max(minimax(depth+1, node*2, False, scores),
+                   minimax(depth+1, node*2+1, False, scores))
+    else:
+        return min(minimax(depth+1, node*2, True, scores),
+                   minimax(depth+1, node*2+1, True, scores))
+
+scores = [3, 5, 2, 9]
+print("Minimax result:", minimax(0, 0, True, scores))
+
+
+2. Alpha Beta Pruning
+----------------------
+def alphabeta(depth, node, alpha, beta, isMax, scores):
+    if depth == 2:
+        return scores[node]
+    if isMax:
+        best = -999
+        for i in range(2):
+            val = alphabeta(depth+1, node*2+i, alpha, beta, False, scores)
+            best = max(best, val)
+            alpha = max(alpha, best)
+            if beta <= alpha:
+                break
+        return best
+    else:
+        best = 999
+        for i in range(2):
+            val = alphabeta(depth+1, node*2+i, alpha, beta, True, scores)
+            best = min(best, val)
+            beta = min(beta, best)
+            if beta <= alpha:
+                break
+        return best
+
+print("Alpha-Beta result:", alphabeta(0, 0, -999, 999, True, scores))
+
+
+3. Naive Bayes
+--------------
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import train_test_split
+
+X = [[1,1,1],[0,1,1],[1,0,0],[0,0,1],[1,1,1],[1,0,1],[0,1,1]]
+y = [1, 0, 1, 0, 1, 1, 0]
+
+model = GaussianNB()
+model.fit(X, y)
+print("Prediction for [1,0,0]:", model.predict([[1,0,0]]))
+
+
+4. Tower of Hanoi
+-----------------
+def hanoi(n, source, temp, target):
+    if n == 1:
+        print(f"Move disk 1 from {source} to {target}")
+        return
+    hanoi(n-1, source, target, temp)
+    print(f"Move disk {n} from {source} to {target}")
+    hanoi(n-1, temp, source, target)
+
+hanoi(3, 'A', 'B', 'C')
+
+
+Assignment 4: NLP and Neural Networks
+
+1. AND Gate
+-----------
+import numpy as np
+
+X = np.array([[0,0],[0,1],[1,0],[1,1]])
+y = np.array([[0],[0],[0],[1]])
+
+weights = np.array([[1],[1]])
+output = np.dot(X, weights) >= 2
+print("AND Gate Output:\n", output.astype(int))
+
+
+2. OR Gate
+----------
+X = np.array([[0,0],[0,1],[1,0],[1,1]])
+y = np.array([[0],[1],[1],[1]])
+
+weights = np.array([[1],[1]])
+output = np.dot(X, weights) >= 1
+print("OR Gate Output:\n", output.astype(int))
+
+
+3. Perceptron for Bipolar Inputs
+--------------------------------
+X = np.array([[-1,-1], [-1,1], [1,-1], [1,1]])
+y = np.array([-1, -1, -1, 1])
 
-# A. Clone any public repository
-git clone <PUBLIC_REPO_URL>             # Replace with a real public repo URL
+w = np.zeros(2)
+b = 0
+lr = 1
 
-# B. Create new public repository manually on GitHub with README.md
-# Then clone it locally (replace with your own repo URL)
-git clone <YOUR_NEW_PUBLIC_REPO_URL>
-cd <your-repo-name>                     # Navigate into the cloned repo
+for _ in range(10):
+    for i in range(4):
+        output = np.dot(X[i], w) + b
+        if y[i] * output <= 0:
+            w += lr * y[i] * X[i]
+            b += lr * y[i]
 
-# Modify README.md to describe purpose
-echo "## Purpose\nThis repository demonstrates Git basics workflow." > README.md
-git add README.md
-git commit -m "Updated README.md to describe repository purpose"
+print("Weights:", w, "Bias:", b)
 
-# C. Configure Git username and email globally
-git config --global user.name "Your Name"
-git config --global user.email "your.email@example.com"
 
-# D. Pull the latest README.md from the remote (for sync)
-git pull origin main
+4. TLN
+------
+def TLN(x1, x2):
+    w1, w2, threshold = 1, 1, 1.5
+    return 1 if (x1*w1 + x2*w2) >= threshold else 0
 
-# E. Edit README.md and create index.html
-echo "### Updated Info" >> README.md
-echo "<!DOCTYPE html><html><head><title>Git Demo</title></head><body>Hello!</body></html>" > index.html
+for x in [(0,0), (0,1), (1,0), (1,1)]:
+    print(f"Input {x} → Output: {TLN(*x)}")
 
-# Stage both files
-git add README.md index.html
-
-# F. Push the changes using --set-upstream (if first push)
-git commit -m "Added index.html and updated README.md"
-git push --set-upstream origin main
-
-#############################
-# (a) to (e): Branching, Merging, and Pushing
-#############################
-
-# Commit C0: Add h1 tag in README.md
-echo "<h1>Title</h1>" > README.md
-git add README.md
-git commit -m "C0: Added h1 tag in README.md"
-
-# Commit C1: Create new txt file
-echo "Initial content" > newfile.txt
-git add newfile.txt
-git commit -m "C1: Created a new txt file"
-
-# Commit C2: Modify the txt file
-echo "Updated content" >> newfile.txt
-git add newfile.txt
-git commit -m "C2: Modified the txt file"
-
-# Push main branch to remote
-git branch -M main
-git push origin main
-
-# --- Create and work on iss53 branch ---
-git checkout -b iss53
-
-# Commit C3: Create index.html and update README.md
-echo "<html><body>Hello</body></html>" > index.html
-echo "Appended content" >> README.md
-git add index.html README.md
-git commit -m "C3: Created index.html and updated README.md in iss53 branch"
-
-# Compare commits C1 and C2 (replace with actual hashes if needed)
-# git diff <C1-hash> <C2-hash>
-
-# Compare iss53 with main
-git diff main..iss53
-
-# Push iss53 branch to remote
-git push origin iss53
-
-# --- Create and work on hotfix branch ---
-git checkout -b hotfix
-
-# Commit C4: Update new txt file
-echo "Critical fix" >> newfile.txt
-git add newfile.txt
-git commit -m "C4: Updated new txt file in hotfix branch"
-
-# Push hotfix to remote
-git push origin hotfix
-
-# --- Merge hotfix into main and delete hotfix ---
-git checkout main
-git merge hotfix
-git branch -d hotfix
-git push origin --delete hotfix
-
-# --- Merge iss53 into main and delete iss53 ---
-git merge iss53
-git branch -d iss53
-git push origin --delete iss53
-
-
-
-
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-main.tf
-
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.16"
-    }
-  }
 
-  required_version = ">= 1.2.0"
-}
+5. 3-Layer Neural Network with Keras
+------------------------------------
+from keras.models import Sequential
+from keras.layers import Dense
+import numpy as np
 
-provider "aws" {
-  region = "ap-south-1"
-}
+X = np.array([[0,1,1], [1,0,0], [1,0,1], [0,0,1], [1,1,1], [1,0,1], [0,1,1]])
+y = np.array([[1], [0], [1], [0], [1], [1], [0]])
 
-# Security Group to allow SSH and HTTP traffic
-resource "aws_security_group" "app_server_sg" {
-  name        = "app-server-sg"
-  description = "Allow SSH and HTTP traffic"
+model = Sequential()
+model.add(Dense(4, input_dim=3, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-  ingress {
-    description = "Allow SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+for epochs in [10, 100, 10000]:
+    model.fit(X, y, epochs=epochs, verbose=0)
+    _, acc = model.evaluate(X, y, verbose=0)
+    print(f"Accuracy after {epochs} epochs: {acc:.2f}")
 
-  ingress {
-    description = "Allow HTTP"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description = "Allow all outbound traffic"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "AppServerSecurityGroup"
-  }
-}
-
-# EC2 instance with user data
-resource "aws_instance" "app_server" {
-  ami           = "ami-00bb6a80f01f03502"
-  instance_type = "t2.micro"
-  # key_name      = "key"
-
-  vpc_security_group_ids = [aws_security_group.app_server_sg.id]
-
-  # Adding user data
-  user_data = <<-EOF
-                #!/bin/bash
-                apt-get update
-                apt-get install apache2 wget unzip vim -y
-                systemctl enabled apache2
-                mkdir -p /tmp/finance
-                cd /tmp/finance
-                wget https://www.tooplate.com/zip-templates/2135_mini_finance.zip
-                unzip -o 2135_mini_finance.zip
-                cp -r 2135_mini_finance/* /var/www/html/
-                systemctl restart apache2
-                cd /tmp/
-                rm -rf /tmp/finance            
-              EOF
-
-  tags = {
-    Name = var.instance_name
-  }
-}
-
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-ass 6 :
-
-Question - 1
- A) sudo docker pull ubuntu:20.04
- B) sudo docker images
- C) sudo docker pull ubuntu:latest
- D) sudo docker rmi < image id >
- E) sudo docker run -d -it --name ubuntu-os ubuntu
- F) sudo docker stop < container id >
- G) sudo docker restart < container id >
- H) sudo docker ps -a
- I) sudo docker exec -d ubuntu-os mkdir abc
- J) sudo docker exec -it ubuntu-os sh (to open terminal of container )
- K) sudo docker stop < container id >
- L) sudo docker container prune
-
-
-
-
-
-
-
-
-
-
-
- 
- Question - 2
- A) sudo docker pull postgressql:latest
- B) sudo docker run --name postgres-user1 -e POSTGRES_PASSWORD=mysecretpassword -d postgres
- C) sudo docker exec -it postgres-user1 psql -U postgres
- D) CREATE DATABASE college;
- E) sudo docker stop < container id >
- F) sudo docker rm < container id >
-
-
-
-
-
-
-
-
-
-
-
- 
- Question - 3
-apt  install nodejs
-apt install npm
-npm init
- vim server.js
-
-// server.js
-const http = require('http');
-
-const hostname = '0.0.0.0';
-const port = 3000;
-
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello, Docker!');
-});
-
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
-
-
-
-
-
- 
- (use ls to check files are available or not)----> [ package.json package-lock.json server.js ]
-
-vim Dockerfile
-
-FROM node:16
-
-WORKDIR /usr/src/app
-
-COPY package.json package-lock.json ./
-
-RUN npm install
-
-COPY . .
-
-EXPOSE 3000
-
-CMD ["npm", "start"]
-
-
- 
- 
- sudo docker build -t my-node .
- sudo docker run --name node-server -d my-node
- sudo docker run -p 3000:3000 my-node   
-
-
-
-
-
-
-
-
-
-
- 
-Question - 4
- sudo docker login -u ( add your username of docker hub account after -u )
- sudo docker tag <image-name> <username>/<image-name>:<tag>
- sudo docker push <user-name>/<image-name>:<tag>
-
-
-
- sudo docker login -u ( add your username of docker hub account after -u )
-
-# Tag the image with the full Docker Hub URL
-sudo docker tag hello-world docker.io/21deepak/hello-world:latest
-
-# Push to Docker Hub
-sudo docker push docker.io/21deepak/hello-world:latest
-
-
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-ass 7 :
-
-1)
-
-A.
-docker network create -d bridge my-bridge-network
-
-docker network create mongo-network
-
-docker run --name mongodb \
-  -p 27017:27017 \
-  -e MONGO_INITDB_ROOT_USERNAME=admin \
-  -e MONGO_INITDB_ROOT_PASSWORD=password \
-  --net mongo-network \
-  -d mongo
-
-docker ps -a
-
-http://localhost:27017
-
-
-B.
-
-docker network create -d bridge my-bridge-network
-
-docker run --name mongo-express \
-  -p 8081:8081 \
-  -e ME_CONFIG_MONGODB_ADMINUSERNAME=admin \
-  -e ME_CONFIG_MONGODB_ADMINPASSWORD=password \
-  -e ME_CONFIG_MONGODB_SERVER=mongodb \
-  --net mongo-network \
-  -d mongo-express
-
-docker ps -a
-
-http://localhost:8081
-
-
-Username: admin
-Password: pass
-
-
-2)
-
-mkdir mongo-compose
-
-cd mongo-compose
-
-vim docker-compose.yml
-
-............................................................................
-
-version: '3.1'
-
-services:
-
-  mongodb:
-    image: mongo
-    restart: always
-    ports:
-       - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
-    volumes:
-      - mongo-data:/data/db
-
-  mongo-express:
-    image: mongo-express
-    restart: always
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
-      ME_CONFIG_MONGODB_SERVER: mongodb
-
-volumes:
-  mongo-data:
-    driver: local
-
-............................................................................
-
-docker compose up -d
-
-http://localhost:8081
-
-
-
-Stop All Containers
-docker stop $(docker ps -aq)
-
-Remove All Containers
-docker rm $(docker ps -aq)
-
-Remove the network
-docker network rm mongo-network
-
-
+print("Test [1,0,0] →", model.predict(np.array([[1,0,0]])))
