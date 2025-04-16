@@ -67,6 +67,128 @@ q6:
 netstat -tuln | grep LISTEN
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
+ASS1
+#!/bin/bash
+
+# 1. Displaying System Information
+#!/bin/bash
+echo "Current Date and Time: $(date)"
+echo "Logged in user: $USER"
+echo "Shell: $SHELL"
+
+
+# 2. Multiplication Table Generator
+#!/bin/bash
+output_file="multiplication.txt"
+> $output_file
+for i in {1..5}; do
+  for j in {1..10}; do
+    echo "$i x $j = $((i * j))" >> $output_file
+  done
+  echo "" >> $output_file
+done
+cat $output_file
+
+
+# 3. Recursive .txt File Error Counter
+#!/bin/bash
+report="error_report.txt"
+> $report
+find . -name "*.txt" | while read file; do
+  count=$(grep -i "error" "$file" | wc -l)
+  echo "$file: $count" >> $report
+done
+
+cat $report
+
+
+# 4. Network Availability Checker (Example usage: bash script.sh google.com)
+#!/bin/bash
+read -p "Enter hostname/IP: " host
+filename="ping_result.log"
+if ping -c 1 "$host" &> /dev/null; then
+  echo "$(date): $host is reachable" >> "$filename"
+else
+  echo "$(date): $host is not reachable" >> "$filename"
+fi
+
+cat $filename
+
+
+# 5. CPU Usage Monitor
+#!/bin/bash
+iterations=10
+count=0
+while (( count < iterations )); do
+  usage=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')
+  usage=${usage%.*}
+  if (( usage < 10 )); then
+    continue
+  elif (( usage > 90 )); then
+    echo "High CPU usage: $usage%" >> cpu.log
+    break
+  else
+    echo "$(date): CPU Usage = $usage%" >> cpu.log
+  fi
+  ((count++))
+done
+
+
+# 6. Log File Processor (Example usage: bash script.sh logfile.txt)
+#!/bin/bash
+logfile="sample.log"
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' "$logfile"
+grep -Eo '\[.*\]' "$logfile"
+grep -i "error" "$logfile"
+
+
+# 7. Prime Number Checker
+#!/bin/bash
+is_prime() {
+  num=$1
+  if (( num <= 1 )); then echo "Not Prime"; return; fi
+  for (( i=2; i*i<=num; i++ )); do
+    if (( num % i == 0 )); then echo "Not Prime"; return; fi
+  done
+  echo "Prime"
+}
+read -p "Enter a number: " n
+is_prime "$n"
+
+
+# 8. Directory Size Monitor (Example usage: bash script.sh /path/to/dir)
+#!/bin/bash
+read -p "Enter directory path: " dir
+filename="dirsize_warn.log"
+size=$(du -sm "$dir" | cut -f1)
+if (( size > 500 )); then
+  echo "$(date): Directory $dir exceeds 500MB. Size: ${size}MB" >> "$filename"
+fi
+
+
+# 9. CSV Processing with awk (Example usage: bash script.sh employees.csv)
+#!/bin/bash
+awk -F, '
+{
+  dept[$2]+=$3; count[$2]++
+  split($4, d, "-"); 
+  if (2024 - d[1] > 5) print "Old employee:", $1
+}
+END {
+  for (d in dept) {
+    print "Average salary in", d, ":", dept[d]/count[d]
+  }
+}' employees.csv
+
+
+# 10. Incremental Backups with Cron (AWS EC2)
+#!/bin/bash
+backup_dir="./backups"
+mkdir -p $backup_dir
+find . -type f -mtime -1 | tar -czf "$backup_dir/incremental-$(date +%F).tar.gz" -T -
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
 GITHUB :
 #!/bin/bash
 
